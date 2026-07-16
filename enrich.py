@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import time
 import os
+import glob
 
 def get_genres_google_books(isbn, title, author):
     query = f"isbn:{isbn}" if pd.notna(isbn) and str(isbn).strip() != "" else f"intitle:{title}+inauthor:{author}"
@@ -19,11 +20,27 @@ def get_genres_google_books(isbn, title, author):
         print(f"Errore per {title}: {e}")
     return "Unknown"
 
-def enrich_goodreads_export(input_file, output_file):
-    if not os.path.exists(input_file):
-        print(f"Errore: Il file {input_file} non esiste!")
+def find_input_file():
+    """Trova il primo file CSV nella cartella che non sia quello di output."""
+    csv_files = glob.glob("*.csv")
+    # Escludiamo il file di output se è già presente da un test precedente
+    valid_files = [f for f in csv_files if f != "goodreads_enriched.csv"]
+    
+    if not valid_files:
+        return None
+    # Prende il file modificato più di recente tra quelli trovati
+    return max(valid_files, key=os.path.getmtime)
+
+def enrich_goodreads_export():
+    input_file = find_input_file()
+    
+    if not input_file:
+        print("Errore: Non ho trovato nessun file CSV da elaborare nella repository!")
         return
         
+    output_file = "goodreads_enriched.csv"
+    print(f"File rilevato: {input_file}. Inizio elaborazione...")
+    
     df = pd.read_csv(input_file)
     print(f"Trovati {len(df)} libri. Recupero generi...")
     genres = []
@@ -46,4 +63,4 @@ def enrich_goodreads_export(input_file, output_file):
     print(f"File arricchito salvato in: {output_file}")
 
 if __name__ == "__main__":
-    enrich_goodreads_export("goodreads_export.csv", "goodreads_enriched.csv")
+    enrich_goodreads_export()
