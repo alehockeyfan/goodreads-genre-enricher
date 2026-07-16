@@ -16,10 +16,10 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Installa le librerie necessarie
+- name: Installa le librerie necessarie
       run: |
         python -m pip install --upgrade pip
-        pip install pandas requests
+        pip install pandas requests beautifulsoup4
 
     - name: Esegui lo script di arricchimento
       run: python enrich.py
